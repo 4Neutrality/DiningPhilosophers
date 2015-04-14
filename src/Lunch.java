@@ -18,13 +18,14 @@ public class Lunch {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        /* Create a thread pool */
-        ExecutorService pool = Executors.newCachedThreadPool();
+        /* Create a fixed size thread pool */
+        ExecutorService pool = Executors.newFixedThreadPool(PHILOSOPHERS);
         /* An arraylist to hold dining philosophers */
         ArrayList<Diner> diners = new ArrayList<>();
 
         /* Initialize diners */
         for (int i = 0; i < PHILOSOPHERS; i++) {
+            /* new Diner(STATE, ID) */
             diners.add(new Diner(Diner.State.THINKING, i));
         }
 
@@ -42,6 +43,6 @@ public class Lunch {
             System.exit(-1);
         }
 
-        System.out.println("\n-----This worked!-----\n");
+        System.out.println("\n-------This worked!-------\n");
     }
 }
