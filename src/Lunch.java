@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This is the Lunch class, and it will serve as a driver for the well-known dining philosophers deadlock
@@ -24,17 +22,13 @@ public class Lunch {
         ExecutorService pool = Executors.newFixedThreadPool(PHILOSOPHERS);
         /* An arraylist to hold dining philosophers */
         ArrayList<Diner> diners = new ArrayList<>();
-        /* Represent chopsticks with a reentrant lock */
-        Lock[] chopsticks = new ReentrantLock[PHILOSOPHERS];
+        /* Initialize monitors for each philosopher */
+        DinerMonitor monitor = new DinerMonitor(PHILOSOPHERS);
 
-        for (Lock c : chopsticks) {
-            c = new ReentrantLock();
-        }
 
         /* Initialize diners */
         for (int i = 0; i < PHILOSOPHERS; i++) {
-            /* new Diner(ID, LEFTCHOPSTICK, RIGHTCHOPSTICK */
-            diners.add(new Diner(i, chopsticks[i], chopsticks[(i+1)%PHILOSOPHERS]));
+            diners.add(new Diner(i, monitor));
         }
 
         /* Spawn off threads for execution */

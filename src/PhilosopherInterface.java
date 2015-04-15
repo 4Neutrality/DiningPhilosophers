@@ -5,7 +5,7 @@
  * @version 04.14.15
  */
 public interface PhilosopherInterface {
-    public static final int DINERS = 5;
-    public void takeChopsticks();
-    public void replaceChopsticks();
+    static final int DINERS = 5;
+    void takeChopsticks(int id);
+    void replaceChopsticks(int id);
 }
