@@ -2,9 +2,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * This is the Lunch class, and it will serve as a driver for the well-know dining philosophers deadlock
+ * This is the Lunch class, and it will serve as a driver for the well-known dining philosophers deadlock
  * problem. It will execute the relevant methods associated with the problem domain.
  *
  * @author Kevin J James
@@ -22,11 +24,17 @@ public class Lunch {
         ExecutorService pool = Executors.newFixedThreadPool(PHILOSOPHERS);
         /* An arraylist to hold dining philosophers */
         ArrayList<Diner> diners = new ArrayList<>();
+        /* Represent chopsticks with a reentrant lock */
+        Lock[] chopsticks = new ReentrantLock[PHILOSOPHERS];
+
+        for (Lock c : chopsticks) {
+            c = new ReentrantLock();
+        }
 
         /* Initialize diners */
         for (int i = 0; i < PHILOSOPHERS; i++) {
-            /* new Diner(STATE, ID) */
-            diners.add(new Diner(Diner.State.THINKING, i));
+            /* new Diner(ID, LEFTCHOPSTICK, RIGHTCHOPSTICK */
+            diners.add(new Diner(i, chopsticks[i], chopsticks[(i+1)%PHILOSOPHERS]));
         }
 
         /* Spawn off threads for execution */
