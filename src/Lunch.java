@@ -18,9 +18,9 @@ public class Lunch {
     public static void main(String[] args) {
         /* Create a fixed size thread pool */
         ExecutorService pool = Executors.newFixedThreadPool(PhilosopherInterface.DINERS);
-        /* An arraylist to hold dining philosophers */
+        /* An array to hold dining philosophers */
         Diner[] diners = new Diner[PhilosopherInterface.DINERS];
-        /* Initialize monitors for each philosopher */
+        /* Initialize monitor for dining philosophers */
         DinerMonitor monitor = new DinerMonitor();
 
 

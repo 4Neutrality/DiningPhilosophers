@@ -16,6 +16,8 @@ public class Diner implements Runnable {
     DinerMonitor monitor;
     /** Random number generator to generate random eat/think times */
     private Random rdm = new Random(WAIT_TIME);
+    /** Holds variable representing is thread is interrupted */
+    Boolean cancelled;
 
 
     /**
@@ -57,14 +59,26 @@ public class Diner implements Runnable {
      * This method is called whenever the thread executes.
      */
     public void run() {
+        this.cancelled = false;
         try {
-            while(true) {
+            while(!cancelled) {
                 think();
                 eat();
+                if (isInterrupted())
+                    this.cancelled = true;
             }
         } catch (InterruptedException ie) {
             System.out.println("Philosopher" + this.id + " was interrupted!");
         }
+    }
+
+    /**
+     * This method checks periodically if the current thread is interrupted.
+     *
+     * @return true if interrupted, false otherwise.
+     */
+    private boolean isInterrupted() {
+        return Thread.currentThread().isInterrupted();
     }
 
     /**
