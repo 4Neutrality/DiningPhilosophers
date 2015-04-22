@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +10,6 @@ import java.util.concurrent.TimeUnit;
  * @version 04.14.15
  */
 public class Lunch {
-    //private static final int PHILOSOPHERS = 5;
     /**
      * This method will serve as the main method for this driver class.
      *

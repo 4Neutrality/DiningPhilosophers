@@ -9,16 +9,19 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version 04.15.15
  */
 public class DinerMonitor {
+    /** The number of diners */
     public static final int DINERS = 5;
-    /** Dinner to the left of current Dinner.*/
+    /** Diner to the left of current Diner.*/
     private static final int LEFT_DINER = 4;
-    /** Dinner to the right of current Dinner.*/
+    /** Diner to the right of current Diner.*/
     private static final int RIGHT_DINER = 1;
     /** An enumeration to hold the different state a philosopher can be in. */
-    private enum State {EATING, THINKING, HUNGRY};
+    private enum State {EATING, THINKING, HUNGRY}
     /** Holds the state of each philosopher */
     private State[] states;
+    /** Holds to condition for each Diner */
     private Condition[] self;
+    /** Holds the single lock used for solution */
     Lock key = new ReentrantLock();
 
     /**
@@ -44,10 +47,6 @@ public class DinerMonitor {
         states[id] = State.HUNGRY;
         key.lock();
         try{
-           //if(!test(id))
-               //self[id].await();
-        
-           //states[id] = State.EATING;
            test(id);
            if(states[id] != State.EATING) self[id].await();
         } catch (InterruptedException ie) {
@@ -55,13 +54,6 @@ public class DinerMonitor {
         } finally {
             key.unlock();
         }
-        /**while (!test(id)) {
-            try {
-                wait();
-            } catch (InterruptedException ie) {
-                System.out.println("Philosopher" + id + " was interrupted!");
-            }
-        }*/
     }
     
     /**
@@ -71,11 +63,13 @@ public class DinerMonitor {
      */
     public void replaceChopsticks(int id) {
         key.lock();
-        states[id] = State.THINKING;
-        test((id + LEFT_DINER) % DINERS);
-        test((id + RIGHT_DINER) % DINERS);
-        //self[id].signalAll();
-        key.unlock();
+        try {
+            states[id] = State.THINKING;
+            test((id + LEFT_DINER) % DINERS);
+            test((id + RIGHT_DINER) % DINERS);
+        } finally {
+            key.unlock();
+        }
     }
 
     /**
@@ -84,22 +78,16 @@ public class DinerMonitor {
      * checking to make sure the person is in their hungry state. 
      *
      * @param id The given unique philosopher ID.
-     * @return True if both chopsticks are free.
      */
     public void test(int id) {
-        //boolean chopsFree = false;
-
-        /* Check if the diner on the left and right is eating. 
+        /* Check if the diner on the left and right is eating.
          * Also check if person is in the hungry state. */
         if ((states[(id + LEFT_DINER) % DINERS] != State.EATING) && 
            (states[(id + RIGHT_DINER) % DINERS] != State.EATING) &&
            (states[id] == State.HUNGRY)) {
-              //chopsFree = true;
               states[id] = State.EATING;
               self[id].signal();
             }
-        
-        //return chopsFree;
     }
 
     /**
