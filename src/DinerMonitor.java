@@ -1,74 +1,105 @@
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 /**
  * This class will serve as a Monitor for the dining philosophers problem, and will ensure that both
- * chopsticks will be picked up at the same time.
+ * chopsticks will be picked up at the same time without allowing deadlock or starvation.
  *
- * @author Kevin J James
+ * @author Kevin J James, Johnathon Malott
  * @version 04.15.15
  */
-public class DinerMonitor implements PhilosopherInterface {
-    /* An enumeration to hold the different state a philosopher can be in. */
+public class DinerMonitor {
+    public static final int DINERS = 5;
+    /** Dinner to the left of current Dinner.*/
+    private static final int LEFT_DINER = 4;
+    /** Dinner to the right of current Dinner.*/
+    private static final int RIGHT_DINER = 1;
+    /** An enumeration to hold the different state a philosopher can be in. */
     private enum State {EATING, THINKING, HUNGRY};
-    /* Holds the state of each philosopher */
+    /** Holds the state of each philosopher */
     private State[] states;
+    private Condition[] self;
+    Lock key = new ReentrantLock();
 
     /**
      * Creates a monitor for a given number of philosophers. Initially all philosophers are thinking.
-     *
-     * @param diners the given number of philosophers
      */
-    public DinerMonitor(int diners) {
-        this.states = new State[diners];
-        for (State s : states) {
-            s = State.THINKING;
+    public DinerMonitor() {
+        states = new State[DINERS];
+        self = new Condition[DINERS];
+        for (int i = 0; i < DINERS; i++) {
+            states[i] = State.THINKING;
+            self[i]= key.newCondition();
         }
     }
 
     /**
-     * This method will have the diner pick up both chopsticks or wait if either diner of his sides
-     * are eating.
+     * This method will set dinner's state to hungry and then have the diner pick up 
+     * both chopsticks if either diner to his sides are not eating or wait.
      *
      * @param id the given unique philosopher ID
      */
-    public synchronized void takeChopsticks(int id) {
+    public void takeChopsticks(int id) {
         /* Set diner state to hungry */
         states[id] = State.HUNGRY;
-        System.out.println("Philosopher" + id + "  is HUNGRY!");
-        System.out.flush();
-
-        while (!test(id)) {
+        key.lock();
+        try{
+           //if(!test(id))
+               //self[id].await();
+        
+           //states[id] = State.EATING;
+           test(id);
+           if(states[id] != State.EATING) self[id].await();
+        } catch (InterruptedException ie) {
+           System.out.println("Philosopher" + id + " was interrupted!");
+        } finally {
+            key.unlock();
+        }
+        /**while (!test(id)) {
             try {
                 wait();
             } catch (InterruptedException ie) {
                 System.out.println("Philosopher" + id + " was interrupted!");
             }
-        }
-        states[id] = State.EATING;
+        }*/
     }
-
+    
     /**
      * This method replaces the chopsticks after the diner is finished eating.
      *
      * @param id the given unique philosopher ID
      */
-    public synchronized void replaceChopsticks(int id) {
+    public void replaceChopsticks(int id) {
+        key.lock();
         states[id] = State.THINKING;
-        notifyAll();
+        test((id + LEFT_DINER) % DINERS);
+        test((id + RIGHT_DINER) % DINERS);
+        //self[id].signalAll();
+        key.unlock();
     }
 
     /**
-     * This method tests whether it is OK for the diner to pick up his chopsticks.
+     * This method tests whether it is OK for the diner to pick up their chopsticks
+     * by checking to see if the chopstick to their left and right are free. Also
+     * checking to make sure the person is in their hungry state. 
      *
-     * @param id the given unique philosopher ID
+     * @param id The given unique philosopher ID.
+     * @return True if both chopsticks are free.
      */
-    public boolean test(int id) {
-        /* Check if the diner on the left is eating */
-        if (states[(id + 1) % DINERS] == State.EATING)
-            return false;
-        /* Check if the diner on the right is eating */
-        if (states[(id + DINERS - 1) % DINERS] == State.EATING)
-            return false;
-        /* No adjacent diners are eating */
-        return true;
+    public void test(int id) {
+        //boolean chopsFree = false;
+
+        /* Check if the diner on the left and right is eating. 
+         * Also check if person is in the hungry state. */
+        if ((states[(id + LEFT_DINER) % DINERS] != State.EATING) && 
+           (states[(id + RIGHT_DINER) % DINERS] != State.EATING) &&
+           (states[id] == State.HUNGRY)) {
+              //chopsFree = true;
+              states[id] = State.EATING;
+              self[id].signal();
+            }
+        
+        //return chopsFree;
     }
 
     /**
